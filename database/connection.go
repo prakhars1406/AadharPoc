@@ -2,6 +2,7 @@ package database
 
 import (
 	"Aadhar_POC/config"
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"time"
 )
@@ -29,7 +30,7 @@ func MongoConnector() MongoClient {
 			}
 			session, err := mgo.DialWithInfo(&dialInfo)
 			if err != nil {
-				// utility.SendNotification(err, fmt.Sprintf("Failed to connect to mongo with configuration [%v]", dialInfo), configs.MONGO_SERVICE)
+				fmt.Println("Error in connection: ", err)
 				return nil
 			}
 			dataStoreClient = &MongoClientImpl{mongoServer: mongoServer, session: session}
