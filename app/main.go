@@ -29,6 +29,7 @@ func init() {
 	}
 	logrus.SetFormatter(formatter)
 }
+
 func main()  {
 	logrus.Info(utility.GetFuncName(), "::Welcome")
 	router := mux.NewRouter().StrictSlash(true)
