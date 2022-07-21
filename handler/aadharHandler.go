@@ -40,9 +40,9 @@ func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 			return
 		}
 
-		person := PostResponse{Id: id, Message: "User created successfully"}
+		res := PostResponse{Id: id, Message: "User created successfully"}
 
-		jsonResponse, _ := json.Marshal(person)
+		jsonResponse, _ := json.Marshal(res)
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusOK)
 		_, _ = writer.Write(jsonResponse)
