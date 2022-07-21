@@ -17,6 +17,7 @@ type PostResponse struct {
 	Message string `json:"message"`
 }
 
+
 func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
@@ -62,6 +63,8 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 		} else {
 			writer.WriteHeader(http.StatusBadRequest)
 		}
+
+
 	}
 }
 
