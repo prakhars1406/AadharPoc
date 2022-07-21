@@ -7,10 +7,13 @@ import (
 	"Aadhar_POC/utility"
 	"encoding/json"
 	"encoding/xml"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
+
+var memoryCache = make(map[string]model.AadharDetails, 100)
 
 type PostResponse struct {
 	Id      string `json:"id"`
@@ -51,7 +54,24 @@ func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
-		aadharDetails,err:=dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
+		requestId := mux.Vars(request)["id"]
+		logrus.Info("requestId" + requestId)
+
+		var aadharDetails model.AadharDetails
+		var err error
+
+		value, ok := memoryCache[requestId]
+
+		if ok {
+			aadharDetails = value
+			logrus.Info("Found in memory")
+
+		} else {
+			logrus.Info("Not Found in memory")
+			aadharDetails, err = dataStoreClient.GetAadharDetails(requestId)
+			memoryCache[requestId] = aadharDetails
+		}
+
 		imageData := config.IMAGE_BASE64
 		if err == nil {
 			logrus.Info(utility.GetFuncName(), "::Get aadhar details success")
@@ -67,8 +87,8 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 
 func getXmlData(aadharDetails model.AadharDetails, imageData string) []byte {
 	aadharXmlData := model.AadharXmlDetails{Id: aadharDetails.Id, Name: aadharDetails.Name, PhoneNumber: aadharDetails.PhoneNumber, DateOfBirth: aadharDetails.DateOfBirth,
-		AddressLine1:aadharDetails.AddressLine1,AddressLine2:aadharDetails.AddressLine2,Pincode: aadharDetails.Pincode,City: aadharDetails.City,State: aadharDetails.State,
-		Image:imageData, Signature: imageData}
+		AddressLine1: aadharDetails.AddressLine1, AddressLine2: aadharDetails.AddressLine2, Pincode: aadharDetails.Pincode, City: aadharDetails.City, State: aadharDetails.State,
+		Image: imageData, Signature: imageData}
 	data, err := xml.MarshalIndent(aadharXmlData, "", "  ")
 	if err != nil {
 		return []byte{}
