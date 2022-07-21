@@ -10,8 +10,6 @@ type AadharDetails struct {
 	Pincode      string `json:"pincode,omitempty"`
 	City         string `json:"city,omitempty"`
 	State        string `json:"state,omitempty"`
-	Image        []byte `json:"image,omitempty"`
-	Error        error  `json:"error,omitempty"`
 }
 type AadharDetailsMongoResponse struct {
 	Id           string `bson:"id,omitempty"`
@@ -23,8 +21,6 @@ type AadharDetailsMongoResponse struct {
 	Pincode      string `bson:"pincode,omitempty"`
 	City         string `bson:"city,omitempty"`
 	State        string `bson:"state,omitempty"`
-	Image        []byte `bson:"image,omitempty"`
-	Error        error  `bson:"error,omitempty"`
 }
 type AadharXmlDetails struct {
 	Id                   string `xml:"id,omitempty"`
@@ -38,7 +34,4 @@ type AadharXmlDetails struct {
 	State                string `xml:"state,omitempty"`
 	Image                string `xml:"image,omitempty"`
 	Signature            string `xml:"signature,omitempty"`
-	RightHandFingerPrint string `xml:"rightHandFingerPrint,omitempty"`
-	LeftHandFingerPrint  string `xml:"leftHandFingerPrint,omitempty"`
-	Error                error  `xml:"error,omitempty"`
 }

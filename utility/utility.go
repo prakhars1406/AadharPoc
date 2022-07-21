@@ -3,7 +3,6 @@ package utility
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"runtime"
@@ -47,12 +46,4 @@ func PanicHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
-}
-
-func WriteAadharDetailsToXMLFile(b []byte, ID string) bool {
-	err := ioutil.WriteFile(ID+".xml", b, 0644)
-	if err != nil {
-		return false
-	}
-	return true
 }
