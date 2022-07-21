@@ -36,9 +36,9 @@ type AadharXmlDetails struct {
 	Pincode              string `xml:"pincode,omitempty"`
 	City                 string `xml:"city,omitempty"`
 	State                string `xml:"state,omitempty"`
-	Image                []byte `xml:"image,omitempty"`
-	Signature            []byte `xml:"signature,omitempty"`
-	RightHandFingerPrint []byte `xml:"rightHandFingerPrint,omitempty"`
-	LeftHandFingerPrint  []byte `xml:"leftHandFingerPrint,omitempty"`
+	Image                string `xml:"image,omitempty"`
+	Signature            string `xml:"signature,omitempty"`
+	RightHandFingerPrint string `xml:"rightHandFingerPrint,omitempty"`
+	LeftHandFingerPrint  string `xml:"leftHandFingerPrint,omitempty"`
 	Error                error  `xml:"error,omitempty"`
 }
