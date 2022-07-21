@@ -46,7 +46,10 @@ func (client *MongoClientImpl) GetAadharDetails(id string,getAadharDetailChannel
 }
 
 func (client *MongoClientImpl) InsertAadharDetails(aadharDetails model.AadharDetails) (string, error) {
-	c := client.session.DB(config.DATABASE_NAME).C(config.COLLECTION_NAME)
+	session := client.session.Copy()
+	defer session.Close()
+
+	c := session.DB(config.DATABASE_NAME).C(config.COLLECTION_NAME)
 
 	uuid := uuid.New()
 	aadharDetails.Id = uuid.String()
