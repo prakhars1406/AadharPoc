@@ -12,30 +12,32 @@ import (
 )
 
 type AadharMongoClient interface {
-	GetAadharDetails(id string)(model.AadharDetails,error)
+	GetAadharDetails(id string)(map[string]string,error)
 	InsertAadharDetails(model.AadharDetails) (string, error)
 }
 
-func (client *MongoClientImpl) GetAadharDetails(id string)(model.AadharDetails,error) {
+func (client *MongoClientImpl) GetAadharDetails(id string)(map[string]string,error) {
 	session := client.session.Copy()
 	defer session.Close()
+	aadharDetails:=make(map[string]string)
 	session.SetMode(mgo.Monotonic, config.STRONG_MODE)
 	c := session.DB(config.DATABASE_NAME).C(fmt.Sprintf(config.COLLECTION_NAME))
 	result := bson.M{}
 	err := c.Find(bson.M{"id": strings.ToLower(id)}).Select(bson.M{}).One(&result)
 	if err != nil {
-		return model.AadharDetails{},errors.New("<mongo> Unable to query collection")
+		return aadharDetails,errors.New("<mongo> Unable to query collection")
 	}
 	if len(result) == 0 {
-		return model.AadharDetails{},errors.New("<mongo> no aadhar details found found")
+		return aadharDetails,errors.New("<mongo> no aadhar details found found")
 	}
-	var aadharDetails model.AadharDetailsMongoResponse
+	//var aadharDetails model.AadharDetailsMongoResponse
+
 	bsonBytes, _ := bson.Marshal(result)
 	err = bson.Unmarshal(bsonBytes, &aadharDetails)
 	if err == nil {
-		return model.AadharDetails(aadharDetails),nil
+		return aadharDetails,nil
 	} else{
-		return model.AadharDetails{},err
+		return aadharDetails,err
 	}
 }
 

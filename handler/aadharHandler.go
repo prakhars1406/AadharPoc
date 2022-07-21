@@ -68,9 +68,9 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 	}
 }
 
-func getXmlData(aadharDetails model.AadharDetails, imageData string) []byte {
-	aadharXmlData := model.AadharXmlDetails{Id: aadharDetails.Id, Name: aadharDetails.Name, PhoneNumber: aadharDetails.PhoneNumber, DateOfBirth: aadharDetails.DateOfBirth,
-		AddressLine1:aadharDetails.AddressLine1,AddressLine2:aadharDetails.AddressLine2,Pincode: aadharDetails.Pincode,City: aadharDetails.City,State: aadharDetails.State,
+func getXmlData(aadharDetails map[string]string, imageData string) []byte {
+	aadharXmlData := model.AadharXmlDetails{Id: aadharDetails["id"], Name: aadharDetails["name"], PhoneNumber: aadharDetails["phonenumber"], DateOfBirth: aadharDetails["dateofbirth"],
+		AddressLine1:aadharDetails["addressline1"],AddressLine2:aadharDetails["addressline2"],Pincode: aadharDetails["pincode"],City: aadharDetails["city"],State: aadharDetails["state"],
 		Image:imageData, Signature: imageData}
 	data, err := xml.MarshalIndent(aadharXmlData, "", "  ")
 	if err != nil {
