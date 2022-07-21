@@ -6,13 +6,14 @@ import (
 	"Aadhar_POC/utility"
 	"encoding/json"
 	"encoding/xml"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type PostResponse struct {
@@ -44,7 +45,7 @@ func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 
 		person := PostResponse{Id: id, Message: "User created successfully"}
 
-    jsonResponse, _ := json.Marshal(person)
+		jsonResponse, _ := json.Marshal(person)
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusOK)
 		_, _ = writer.Write(jsonResponse)
@@ -54,30 +55,29 @@ func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
-		//writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusOK)
-		getAadharDetailChannel:=make(chan model.AadharDetails)
-		getImageDataChannel:=make(chan []byte)
+
+		getAadharDetailChannel := make(chan model.AadharDetails)
+		getImageDataChannel := make(chan []byte)
 		var getAadharWaitGroup sync.WaitGroup
 		getAadharWaitGroup.Add(2)
-		go dataStoreClient.GetAadharDetails(mux.Vars(request)["id"],getAadharDetailChannel,&getAadharWaitGroup)
-		go readImageData(mux.Vars(request)["id"],getImageDataChannel,&getAadharWaitGroup)
-		aadharDetails:=<-getAadharDetailChannel
-		imageData:=<-getImageDataChannel
+		go dataStoreClient.GetAadharDetails(mux.Vars(request)["id"], getAadharDetailChannel, &getAadharWaitGroup)
+		go readImageData(mux.Vars(request)["id"], getImageDataChannel, &getAadharWaitGroup)
+		aadharDetails := <-getAadharDetailChannel
+		imageData := <-getImageDataChannel
 		getAadharWaitGroup.Wait()
-		if aadharDetails.Error==nil{
+		if aadharDetails.Error == nil {
+			fileName := "attachment; filename= " + aadharDetails.Id + ".xml"
 			logrus.Info(utility.GetFuncName(), "::Get aadhar details success")
-			writer.Header().Set("Content-Type", "application/xml")
-
-			writer.Write(getXmlData(aadharDetails,imageData))
+			writer.Header().Set("Content-Disposition", fileName)
+			writer.Write(getXmlData(aadharDetails, imageData))
 			writer.WriteHeader(http.StatusOK)
 
-		}else{
+		} else {
 			writer.WriteHeader(http.StatusBadRequest)
 		}
 	}
 }
-func readImageData(id string,getImageDataChannel chan []byte,getAadharWaitGroup *sync.WaitGroup){
+func readImageData(id string, getImageDataChannel chan []byte, getAadharWaitGroup *sync.WaitGroup) {
 	defer getAadharWaitGroup.Done()
 	//////Reading from file/////
 	timeout := time.Duration(5) * time.Second
@@ -93,21 +93,21 @@ func readImageData(id string,getImageDataChannel chan []byte,getAadharWaitGroup 
 	}
 	resp, err := client.Get("https://upload.wikimedia.org/wikipedia/commons/9/9e/Placeholder_Person.jpg?20190819145659")
 	if err != nil {
-		getImageDataChannel<-[]byte{}
+		getImageDataChannel <- []byte{}
 	}
 	// read response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		getImageDataChannel<-[]byte{}
+		getImageDataChannel <- []byte{}
 	}
 	// close response body
 	defer resp.Body.Close()
-	getImageDataChannel<-body
+	getImageDataChannel <- body
 }
 
-func getXmlData(aadharDetails model.AadharDetails,imageData []byte)[]byte{
-	aadharXmlData := model.AadharXmlDetails{Id: aadharDetails.Id,Name:aadharDetails.Name,PhoneNumber: aadharDetails.PhoneNumber,DateOfBirth: aadharDetails.DateOfBirth,
-		Image: imageData,Signature:imageData,RightHandFingerPrint: imageData,LeftHandFingerPrint:imageData }
+func getXmlData(aadharDetails model.AadharDetails, imageData []byte) []byte {
+	aadharXmlData := model.AadharXmlDetails{Id: aadharDetails.Id, Name: aadharDetails.Name, PhoneNumber: aadharDetails.PhoneNumber, DateOfBirth: aadharDetails.DateOfBirth,
+		Image: imageData, Signature: imageData, RightHandFingerPrint: imageData, LeftHandFingerPrint: imageData}
 	data, err := xml.MarshalIndent(aadharXmlData, "", "  ")
 	if err != nil {
 		return []byte{}
