@@ -6,10 +6,12 @@ import (
 	"Aadhar_POC/model"
 	"Aadhar_POC/utility"
 	"encoding/json"
-	"encoding/xml"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	 "log"
 	"net/http"
+	 "Aadhar_POC/protoservice"
+     "github.com/golang/protobuf/proto"
 )
 
 type PostResponse struct {
@@ -55,6 +57,7 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 		aadharDetails,err:=dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
 		imageData := config.IMAGE_BASE64
 		if err == nil {
+
 			logrus.Info(utility.GetFuncName(), "::Get aadhar details success")
 			writer.Header().Set("Content-Type", "application/xml")
 			writer.Write(getXmlData(aadharDetails, imageData))
@@ -69,12 +72,19 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 }
 
 func getXmlData(aadharDetails map[string]string, imageData string) []byte {
-	aadharXmlData := model.AadharXmlDetails{Id: aadharDetails["id"], Name: aadharDetails["name"], PhoneNumber: aadharDetails["phonenumber"], DateOfBirth: aadharDetails["dateofbirth"],
+	/*aadharXmlData := model.AadharXmlDetails{Id: aadharDetails["id"], Name: aadharDetails["name"], PhoneNumber: aadharDetails["phonenumber"], DateOfBirth: aadharDetails["dateofbirth"],
 		AddressLine1:aadharDetails["addressline1"],AddressLine2:aadharDetails["addressline2"],Pincode: aadharDetails["pincode"],City: aadharDetails["city"],State: aadharDetails["state"],
-		Image:imageData, Signature: imageData}
+		Image:imageData}
 	data, err := xml.MarshalIndent(aadharXmlData, "", "  ")
 	if err != nil {
 		return []byte{}
+	}*/
+	aadharXmlData := &protoservice.AadharDetails{Id: aadharDetails["id"], Name: aadharDetails["name"], PhoneNumber: aadharDetails["phonenumber"], DateOfBirth: aadharDetails["dateofbirth"],
+		AddressLine1:aadharDetails["addressline1"],AddressLine2:aadharDetails["addressline2"],Pincode: aadharDetails["pincode"],City: aadharDetails["city"],State: aadharDetails["state"],
+		Image:imageData,Signature: imageData}
+	data, err := proto.Marshal(aadharXmlData)
+	if err != nil {
+		log.Fatal("marshaling error: ", err)
 	}
 	return data
 }
