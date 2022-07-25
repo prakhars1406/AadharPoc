@@ -61,13 +61,11 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 			logrus.Info(utility.GetFuncName(), "::Get aadhar details success")
 			writer.Header().Set("Content-Type", "application/xml")
 			writer.Write(getXmlData(aadharDetails, imageData))
-			writer.WriteHeader(http.StatusOK)
 
 		} else {
+			logrus.Info("::Get aadhar details failed with:", err, mux.Vars(request)["id"])
 			writer.WriteHeader(http.StatusBadRequest)
 		}
-
-
 	}
 }
 
