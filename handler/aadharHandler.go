@@ -3,14 +3,10 @@ package handler
 import (
 	"Aadhar_POC/database"
 	"Aadhar_POC/model"
-	"Aadhar_POC/protoservice"
 	"Aadhar_POC/utility"
 	"encoding/json"
-	"fmt"
-	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"log"
 	"net/http"
 )
 
@@ -18,7 +14,6 @@ type PostResponse struct {
 	Id      string `json:"id"`
 	Message string `json:"message"`
 }
-
 
 func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
@@ -56,37 +51,15 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 		defer utility.PanicHandler(writer, request)
 		aadharDetails,err:=dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
 		if err == nil {
-			//aadharDetails["image"]=config.IMAGE_BASE64
-			//aadharDetails["signature"]=config.IMAGE_BASE64
-			logrus.Info(utility.GetFuncName(), "::Get aadhar details success")
-			//writer.Header().Set("Content-Type", "application/text")
-			jsonStr, err := json.Marshal(aadharDetails)
-			if err != nil {
-				fmt.Println(err)
-			}
-			writer.Write(jsonStr)
+
+			logrus.Info( "::Get aadhar details success")
+			writer.Header().Set("Content-Disposition", "test.xml")
+			writer.Write(aadharDetails)
+			writer.WriteHeader(http.StatusOK)
 
 		} else {
-			logrus.Info("::Get aadhar details failed with:", err, mux.Vars(request)["id"])
+			logrus.Error("::Get aadhar details failed with:", err, mux.Vars(request)["id"])
 			writer.WriteHeader(http.StatusBadRequest)
 		}
 	}
-}
-
-func getXmlData(aadharDetails map[string]string, imageData string) []byte {
-	/*aadharXmlData := model.AadharXmlDetails{Id: aadharDetails["id"], Name: aadharDetails["name"], PhoneNumber: aadharDetails["phonenumber"], DateOfBirth: aadharDetails["dateofbirth"],
-		AddressLine1:aadharDetails["addressline1"],AddressLine2:aadharDetails["addressline2"],Pincode: aadharDetails["pincode"],City: aadharDetails["city"],State: aadharDetails["state"],
-		Image:imageData}
-	data, err := xml.MarshalIndent(aadharXmlData, "", "  ")
-	if err != nil {
-		return []byte{}
-	}*/
-	aadharXmlData := &protoservice.AadharDetails{Id: aadharDetails["id"], Name: aadharDetails["name"], PhoneNumber: aadharDetails["phonenumber"], DateOfBirth: aadharDetails["dateofbirth"],
-		AddressLine1:aadharDetails["addressline1"],AddressLine2:aadharDetails["addressline2"],Pincode: aadharDetails["pincode"],City: aadharDetails["city"],State: aadharDetails["state"],
-		Image:imageData,Signature: imageData}
-	data, err := proto.Marshal(aadharXmlData)
-	if err != nil {
-		log.Fatal("marshaling error: ", err)
-	}
-	return data
 }

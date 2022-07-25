@@ -12,32 +12,30 @@ import (
 )
 
 type AadharMongoClient interface {
-	GetAadharDetails(id string)(map[string]interface{},error)
+	GetAadharDetails(id string)([]byte,error)
 	InsertAadharDetails(model.AadharDetails) (string, error)
 }
 
-func (client *MongoClientImpl) GetAadharDetails(id string)(map[string]interface{},error) {
+func (client *MongoClientImpl) GetAadharDetails(id string)([]byte,error) {
 	session := client.session.Copy()
 	defer session.Close()
-	aadharDetails:=make(map[string]interface{})
 	session.SetMode(mgo.Monotonic, config.STRONG_MODE)
 	c := session.DB(config.DATABASE_NAME).C(fmt.Sprintf(config.COLLECTION_NAME))
 	result := bson.M{}
 	err := c.Find(bson.M{"id": strings.ToLower(id)}).Select(bson.M{}).One(&result)
 	if err != nil {
-		return aadharDetails,errors.New("<mongo> Unable to query collection")
+		return []byte{},errors.New("<mongo> Unable to query collection")
 	}
 	if len(result) == 0 {
-		return aadharDetails,errors.New("<mongo> no aadhar details found found")
+		return []byte{},errors.New("<mongo> no aadhar details found found")
 	}
-	//var aadharDetails model.AadharDetailsMongoResponse
-
-	bsonBytes, _ := bson.Marshal(result)
-	err = bson.Unmarshal(bsonBytes, &aadharDetails)
+	result["image"]=config.IMAGE_BASE64
+	result["signature"]=config.IMAGE_BASE64
+	bsonBytes, err:= bson.Marshal(result)
 	if err == nil {
-		return aadharDetails,nil
+		return bsonBytes,nil
 	} else{
-		return aadharDetails,err
+		return []byte{},err
 	}
 }
 
