@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"Aadhar_POC/config"
 	"Aadhar_POC/database"
 	"Aadhar_POC/model"
+	"Aadhar_POC/protoservice"
 	"Aadhar_POC/utility"
 	"encoding/json"
+	"fmt"
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	 "log"
+	"log"
 	"net/http"
-	 "Aadhar_POC/protoservice"
-     "github.com/golang/protobuf/proto"
 )
 
 type PostResponse struct {
@@ -55,12 +55,16 @@ func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
 		aadharDetails,err:=dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
-		imageData := config.IMAGE_BASE64
 		if err == nil {
-
+			//aadharDetails["image"]=config.IMAGE_BASE64
+			//aadharDetails["signature"]=config.IMAGE_BASE64
 			logrus.Info(utility.GetFuncName(), "::Get aadhar details success")
-			writer.Header().Set("Content-Type", "application/xml")
-			writer.Write(getXmlData(aadharDetails, imageData))
+			//writer.Header().Set("Content-Type", "application/text")
+			jsonStr, err := json.Marshal(aadharDetails)
+			if err != nil {
+				fmt.Println(err)
+			}
+			writer.Write(jsonStr)
 
 		} else {
 			logrus.Info("::Get aadhar details failed with:", err, mux.Vars(request)["id"])

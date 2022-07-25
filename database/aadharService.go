@@ -12,14 +12,14 @@ import (
 )
 
 type AadharMongoClient interface {
-	GetAadharDetails(id string)(map[string]string,error)
+	GetAadharDetails(id string)(map[string]interface{},error)
 	InsertAadharDetails(model.AadharDetails) (string, error)
 }
 
-func (client *MongoClientImpl) GetAadharDetails(id string)(map[string]string,error) {
+func (client *MongoClientImpl) GetAadharDetails(id string)(map[string]interface{},error) {
 	session := client.session.Copy()
 	defer session.Close()
-	aadharDetails:=make(map[string]string)
+	aadharDetails:=make(map[string]interface{})
 	session.SetMode(mgo.Monotonic, config.STRONG_MODE)
 	c := session.DB(config.DATABASE_NAME).C(fmt.Sprintf(config.COLLECTION_NAME))
 	result := bson.M{}
