@@ -3,6 +3,7 @@ package utility
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"runtime"
@@ -29,7 +30,7 @@ func GetFuncName() string {
 	return f.Name()[i+1:]
 }
 
-func PanicHandler(w http.ResponseWriter, r *http.Request) {
+func PanicHandler(ctx *gin.Context) {
 	if r := recover(); r != nil {
 		log.Println(fmt.Sprintf("Recovered in f %v", r))
 		var err error
@@ -43,7 +44,7 @@ func PanicHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			fmt.Println("stacktrace from panic: \n" + string(debug.Stack()))
-			w.WriteHeader(http.StatusInternalServerError)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
 		}
 	}
 }

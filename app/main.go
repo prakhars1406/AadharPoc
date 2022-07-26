@@ -6,12 +6,11 @@ import (
 	"Aadhar_POC/handler"
 	"Aadhar_POC/utility"
 	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"log"
-	"net/http"
 	"runtime"
 )
+
 func init() {
 	logrus.SetReportCaller(true)
 	formatter := &logrus.TextFormatter{
@@ -25,14 +24,16 @@ func init() {
 	logrus.SetFormatter(formatter)
 }
 
-func main()  {
+func main() {
 	logrus.Info(utility.GetFuncName(), "::Welcome")
-	router := mux.NewRouter().StrictSlash(true)
+	router := gin.Default()
 	dataStoreClient := database.MongoConnector()
 	addAadharHandler := handler.AddAadharHandler(dataStoreClient)
 	getAadharHandler := handler.GetAadharHandler(dataStoreClient)
-	router.Handle("/aadhar", addAadharHandler).Methods(http.MethodPost)
-	router.Handle("/aadhar/{id}", getAadharHandler).Methods(http.MethodGet)
-	log.Fatal(http.ListenAndServe(config.KEY_SEPARATOR+config.PORT, router))
+	router.POST("/aadhar", addAadharHandler)
+	//router.Handle("/aadhar", addAadharHandler).Methods(http.MethodPost)
+	router.GET("/aadhar/:id", getAadharHandler)
+	router.Run(config.KEY_SEPARATOR + config.PORT)
+	//log.Fatal(http.ListenAndServe(config.KEY_SEPARATOR+config.PORT, router))
 
 }
