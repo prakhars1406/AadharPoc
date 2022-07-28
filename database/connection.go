@@ -3,12 +3,13 @@ package database
 import (
 	"Aadhar_POC/config"
 	"fmt"
-	"gopkg.in/mgo.v2"
 	"time"
+
+	"gopkg.in/mgo.v2"
 )
 
 var (
-	dataStoreClient MongoClient          = nil
+	dataStoreClient MongoClient = nil
 )
 
 type MongoClientImpl struct {

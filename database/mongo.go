@@ -4,6 +4,3 @@ package database
 type MongoClient interface {
 	AadharMongoClient
 }
-
-
-
