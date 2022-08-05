@@ -1,17 +1,18 @@
 package handler
 
 import (
-	"Aadhar_POC/database"
 	"Aadhar_POC/model"
 	"Aadhar_POC/protoservice"
 	"Aadhar_POC/utility"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"log"
-	"net/http"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 type PostResponse struct {
@@ -19,8 +20,7 @@ type PostResponse struct {
 	Message string `json:"message"`
 }
 
-
-func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
+func AddAadharHandler(dataStoreClient *leveldb.DB) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
 
@@ -51,10 +51,10 @@ func AddAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
 	}
 }
 
-func GetAadharHandler(dataStoreClient database.MongoClient) http.HandlerFunc {
+func GetAadharHandler(dataStoreClient *leveldb.DB) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
-		aadharDetails,err:=dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
+		aadharDetails, err := dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
 		if err == nil {
 			//aadharDetails["image"]=config.IMAGE_BASE64
 			//aadharDetails["signature"]=config.IMAGE_BASE64
@@ -82,8 +82,8 @@ func getXmlData(aadharDetails map[string]string, imageData string) []byte {
 		return []byte{}
 	}*/
 	aadharXmlData := &protoservice.AadharDetails{Id: aadharDetails["id"], Name: aadharDetails["name"], PhoneNumber: aadharDetails["phonenumber"], DateOfBirth: aadharDetails["dateofbirth"],
-		AddressLine1:aadharDetails["addressline1"],AddressLine2:aadharDetails["addressline2"],Pincode: aadharDetails["pincode"],City: aadharDetails["city"],State: aadharDetails["state"],
-		Image:imageData,Signature: imageData}
+		AddressLine1: aadharDetails["addressline1"], AddressLine2: aadharDetails["addressline2"], Pincode: aadharDetails["pincode"], City: aadharDetails["city"], State: aadharDetails["state"],
+		Image: imageData, Signature: imageData}
 	data, err := proto.Marshal(aadharXmlData)
 	if err != nil {
 		log.Fatal("marshaling error: ", err)
