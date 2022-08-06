@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -20,7 +21,7 @@ type PostResponse struct {
 	Message string `json:"message"`
 }
 
-func AddAadharHandler(dataStoreClient *leveldb.DB) http.HandlerFunc {
+func AddAadharHandler() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
 
@@ -34,14 +35,21 @@ func AddAadharHandler(dataStoreClient *leveldb.DB) http.HandlerFunc {
 		}
 
 		var id string
-		id, err = dataStoreClient.InsertAadharDetails(aadharDetails)
+		// id, err = dataStoreClient.InsertAadharDetails(aadharDetails)
 
+		db, err := leveldb.OpenFile("./database.db", nil)
+		defer db.Close()
+		uuid := uuid.New()
+		aadharDetails.Id = uuid.String()
+		err = db.Put([]byte(uuid.String()), []byte(aadharDetails.Name), nil)
+		data, err := db.Get([]byte(uuid.String()), nil)
+		id = uuid.String()
 		if err != nil {
 			writer.WriteHeader(500)
 			logrus.Error(utility.GetFuncName(), "Error in POST Aadhar: ", err)
 			return
 		}
-
+		fmt.Println(data)
 		person := PostResponse{Id: id, Message: "User created successfully"}
 
 		jsonResponse, _ := json.Marshal(person)
@@ -51,10 +59,13 @@ func AddAadharHandler(dataStoreClient *leveldb.DB) http.HandlerFunc {
 	}
 }
 
-func GetAadharHandler(dataStoreClient *leveldb.DB) http.HandlerFunc {
+func GetAadharHandler() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		defer utility.PanicHandler(writer, request)
-		aadharDetails, err := dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
+		// aadharDetails, err := dataStoreClient.GetAadharDetails(mux.Vars(request)["id"])
+		db, err := leveldb.OpenFile("./database.db", nil)
+		defer db.Close()
+		aadharDetails, err := db.Get([]byte(mux.Vars(request)["id"]), nil)
 		if err == nil {
 			//aadharDetails["image"]=config.IMAGE_BASE64
 			//aadharDetails["signature"]=config.IMAGE_BASE64

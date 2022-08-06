@@ -2,7 +2,6 @@ package main
 
 import (
 	"Aadhar_POC/config"
-	"Aadhar_POC/database"
 	"Aadhar_POC/handler"
 	"Aadhar_POC/utility"
 	"fmt"
@@ -31,9 +30,9 @@ func main() {
 	logrus.Info(utility.GetFuncName(), "::Welcome")
 	router := mux.NewRouter().StrictSlash(true)
 	// dataStoreClient := database.MongoConnector()
-	dataStoreClient := database.LevelDBConnector()
-	addAadharHandler := handler.AddAadharHandler(dataStoreClient)
-	getAadharHandler := handler.GetAadharHandler(dataStoreClient)
+	// dataStoreClient := database.LevelDBConnector()
+	addAadharHandler := handler.AddAadharHandler()
+	getAadharHandler := handler.GetAadharHandler()
 	router.Handle("/aadhar", addAadharHandler).Methods(http.MethodPost)
 	router.Handle("/aadhar/{id}", getAadharHandler).Methods(http.MethodGet)
 	log.Fatal(http.ListenAndServe(config.KEY_SEPARATOR+config.PORT, router))

@@ -2,13 +2,14 @@ package database
 
 import (
 	"Aadhar_POC/model"
-	"uuid"
+
+	"github.com/google/uuid"
 )
 
-type AadharMongoClient interface {
-	GetAadharDetails(id string) (map[string]interface{}, error)
-	InsertAadharDetails(model.AadharDetails) (string, error)
-}
+// type AadharMongoClient interface {
+// 	GetAadharDetails(id string) (map[string]interface{}, error)
+// 	InsertAadharDetails(model.AadharDetails) (string, error)
+// }
 
 type AadharLevelDbClient interface {
 	GetAadharDetails(id string) (map[string]interface{}, error)
@@ -59,6 +60,6 @@ func (client *LevelDBClientImpl) GetAadharDetails(id string) ([]byte, error) {
 func (client LevelDBClientImpl) InsertAadharDetails(aadharDetails model.AadharDetails) (string, error) {
 	uuid := uuid.New()
 	aadharDetails.Id = uuid.String()
-	err := client.db.Put([]byte("aadharDetails"), aadharDetails, nil)
+	err := client.db.Put([]byte(uuid.String()), []byte(aadharDetails.Name), nil)
 	return uuid.String(), err
 }

@@ -6,15 +6,15 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-// var (
-// 	db leveldb.DB = nil
-// )
+var (
+	dataStoreLDBClient LevelDbClient = nil
+)
 
 type LevelDBClientImpl struct {
 	db *leveldb.DB
 }
 
-func LevelDBConnector() *leveldb.DB {
+func LevelDBConnector() LevelDbClient {
 	db, err := leveldb.OpenFile("./database.db", nil)
 	defer db.Close()
 	if err != nil {
@@ -22,5 +22,7 @@ func LevelDBConnector() *leveldb.DB {
 		return nil
 	}
 
-	return db
+	dataStoreLDBClient = &LevelDBClientImpl{db: db}
+
+	return dataStoreLDBClient
 }
